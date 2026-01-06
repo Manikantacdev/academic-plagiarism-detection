@@ -29,9 +29,25 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="AI Plagiarism Detector", version="1.0.0")
 
-# Initialize Engines
-ai_engine = AIEngine()
-ai_detector = AIDetector()
+# Lazy-loaded engines to prevent startup timeouts on Render
+_ai_engine = None
+_ai_detector = None
+
+def get_ai_engine():
+    global _ai_engine
+    if _ai_engine is None:
+        print("Loading AI Engine (Sentence Transformers)... This may take a few minutes on first run.")
+        from core.ai_engine import AIEngine
+        _ai_engine = AIEngine()
+    return _ai_engine
+
+def get_ai_detector():
+    global _ai_detector
+    if _ai_detector is None:
+        print("Loading AI Detector (RoBERTa)... This may take a few minutes on first run.")
+        from core.ai_detector import AIDetector
+        _ai_detector = AIDetector()
+    return _ai_detector
 
 # CORS Setup
 app.add_middleware(
@@ -40,7 +56,8 @@ app.add_middleware(
         "http://localhost:5173", 
         "http://localhost:5174", 
         "http://127.0.0.1:5173", 
-        "http://127.0.0.1:5174"
+        "http://127.0.0.1:5174",
+        "https://*.vercel.app" # Allow all Vercel deployments
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -171,12 +188,12 @@ async def check_plagiarism_api(request: dict, db: Session = Depends(get_db)):
     style_metrics = Stylometry.analyze(text)
 
     # 3. AI Text Detection
-    ai_prob = ai_detector.detect(text)
+    ai_prob = get_ai_detector().detect(text)
 
     # 4. Plagiarism Analysis (Search against SHARED index)
     matches = []
     for i, sent in enumerate(sentences):
-        results = ai_engine.search(sent, top_k=1)
+        results = get_ai_engine().search(sent, top_k=1)
         if results:
             best_match = results[0]
             if best_match['score'] > 0.4:
@@ -236,7 +253,7 @@ async def check_plagiarism_api(request: dict, db: Session = Depends(get_db)):
     db.refresh(submission)
 
     # 7. Add to SHARED FAISS index (so others can match against it)
-    ai_engine.add_to_index(sentences, str(submission.id))
+    get_ai_engine().add_to_index(sentences, str(submission.id))
 
     # 8. Prepare chunks for UI
     chunks = []
@@ -298,7 +315,7 @@ async def get_stats_api(user_email: str = None, db: Session = Depends(get_db)):
                 "success": True,
                 "stats": {
                     "total_documents": count,
-                    "index_size": ai_engine.index.ntotal
+                    "index_size": get_ai_engine().index.ntotal
                 }
             }
             
@@ -307,7 +324,7 @@ async def get_stats_api(user_email: str = None, db: Session = Depends(get_db)):
         "success": True,
         "stats": {
             "total_documents": count,
-            "index_size": ai_engine.index.ntotal
+            "index_size": get_ai_engine().index.ntotal
         }
     }
 
@@ -315,14 +332,15 @@ async def get_stats_api(user_email: str = None, db: Session = Depends(get_db)):
 async def rebuild_index_api(db: Session = Depends(get_db)):
     try:
         import faiss
-        ai_engine.index = faiss.IndexFlatIP(ai_engine.dimension)
-        ai_engine.metadata = []
+        engine_instance = get_ai_engine()
+        engine_instance.index = faiss.IndexFlatIP(engine_instance.dimension)
+        engine_instance.metadata = []
         submissions = db.query(Submission).all()
         for sub in submissions:
             preprocessed = Preprocessor.preprocess(sub.content_text)
             sentences = preprocessed["sentences"]
             if sentences:
-                ai_engine.add_to_index(sentences, str(sub.id))
+                engine_instance.add_to_index(sentences, str(sub.id))
         return {"success": True, "message": f"Successfully re-indexed {len(submissions)} documents"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Rebuild failed: {str(e)}")

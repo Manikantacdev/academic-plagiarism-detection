@@ -5,22 +5,31 @@
 @layer base {
   :root {
     /* Landing Page Dark Theme */
-    --landing-dark: 222 47% 6%; /* #0a0e1a - Deep dark blue-black */
-    --landing-card: 222 40% 10%; /* #121829 - Card background */
-    --landing-blue: 217 91% 60%; /* #4a90f4 - Accent blue */
-    --landing-purple: 262 83% 58%; /* #8b5cf6 - Accent purple */
-    --landing-glow: 199 89% 70%; /* #67d4fc - Glow effect */
+    --landing-dark: 222 47% 6%;
+    /* #0a0e1a - Deep dark blue-black */
+    --landing-card: 222 40% 10%;
+    /* #121829 - Card background */
+    --landing-blue: 217 91% 60%;
+    /* #4a90f4 - Accent blue */
+    --landing-purple: 262 83% 58%;
+    /* #8b5cf6 - Accent purple */
+    --landing-glow: 199 89% 70%;
+    /* #67d4fc - Glow effect */
 
     /* App Theme (Dark Mode) */
-    --background: 222 47% 8%; /* #0d1220 - App background */
-    --foreground: 210 40% 96%; /* #f1f5f9 - Light text */
+    --background: 222 47% 8%;
+    /* #0d1220 - App background */
+    --foreground: 210 40% 96%;
+    /* #f1f5f9 - Light text */
 
     /* Primary: Blue accent */
-    --primary: 217 91% 60%; /* #4a90f4 */
+    --primary: 217 91% 60%;
+    /* #4a90f4 */
     --primary-foreground: 210 40% 98%;
 
     /* Secondary: Muted highlights */
-    --secondary: 215 20% 20%; /* #2a3344 */
+    --secondary: 215 20% 20%;
+    /* #2a3344 */
     --secondary-foreground: 210 40% 90%;
 
     /* Muted UI Elements */
@@ -28,13 +37,17 @@
     --muted-foreground: 215 20% 55%;
 
     /* Highlights for Analysis */
-    --highlight-orange: 25 95% 53%; /* High similarity */
-    --highlight-green: 142 71% 45%; /* Paraphrase */
-    --highlight-purple: 262 83% 58%; /* Referenced */
-    
-    --card: 222 35% 12%; /* #161d2d */
+    --highlight-orange: 25 95% 53%;
+    /* High similarity */
+    --highlight-green: 142 71% 45%;
+    /* Paraphrase */
+    --highlight-purple: 262 83% 58%;
+    /* Referenced */
+
+    --card: 222 35% 12%;
+    /* #161d2d */
     --card-foreground: 210 40% 96%;
-    
+
     --border: 220 20% 18%;
     --input: 220 20% 18%;
     --ring: 217 91% 60%;
@@ -45,7 +58,12 @@
     font-feature-settings: "ss01", "ss02", "cv01", "cv02";
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-serif tracking-tight text-white;
   }
 }
@@ -54,13 +72,12 @@
   .text-balance {
     text-wrap: balance;
   }
-  
+
   .shadow-soft {
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   }
-  
+
   .shadow-2xl {
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   }
 }
-
